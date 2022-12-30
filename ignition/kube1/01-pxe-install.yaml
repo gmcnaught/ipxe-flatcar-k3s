@@ -1,0 +1,24 @@
+### persists flatcar to disk - installs regular boot ignition file.
+variant: flatcar
+version: 1.0.0
+systemd:
+  units:
+    - name: installer.service
+      enabled: true
+      contents: |
+        [Unit]
+        Requires=network-online.target
+        After=network-online.target
+        [Service]
+        Type=forking
+        TimeoutStartSec=600
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/sh -c "flatcar-install -d /dev/sda -i /opt/ignition.json &amp;&amp; udevadm settle &amp;&amp; systemctl reboot"
+        [Install]
+        WantedBy=multi-user.target
+storage:
+  files:
+    - path: /opt/ignition.json
+      mode: 0777
+      contents:
+        source: https://raw.githubusercontent.com/gmcnaught/ipxe-flatcar-k3s/main/ignition/kube1/boot.ign
